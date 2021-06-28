@@ -25,6 +25,10 @@ class Player {
     this.score = 0;
   }
 
+  static async createPlayer() {
+    return new Player(await assignPlayer());
+  }
+
   addScore() {
     return this.score++;
   }
@@ -48,30 +52,34 @@ class Round {
     const random = this.getRandomNumber();
     if (random % 2 !== 0) {
       this.player1.addScore();
-      return [random, this.player1.name]
+      return [random, this.player1.name];
     } else {
-        this.player2.addScore();
-        return [random, this.player2.name]
+      this.player2.addScore();
+      return [random, this.player2.name];
     }
   }
 }
 
 class Game {
-  constructor() {
+  constructor(numberOfPlayers) {
     this.round = null;
     this.count = 0;
     this.winner = null;
+    this.numberOfPlayers = numberOfPlayers || 2;
     this.players = [];
   }
 
   async createPlayers() {
-    const p1 = new Player(await assignPlayer());
-    const p2 = new Player(await assignPlayer());
-    return [p1, p2];
+    while (this.players.length < this.numberOfPlayers) {
+      const newPlayer = await Player.createPlayer();
+      this.players.push(newPlayer);
+    }
+    console.log();
+    return;
   }
 
   async startGame() {
-    this.players = await this.createPlayers();
+    await this.createPlayers();
     this.round = new Round(...this.players);
 
     while (!this.winner) {
@@ -95,5 +103,31 @@ class Game {
   }
 }
 
-const game1 = new Game();
-game1.startGame();
+class Tournament extends Game {
+  constructor(numberOfPlayers) {
+    super();
+    this.numberOfPlayers = numberOfPlayers;
+  }
+
+  pickTwoPlayers() {
+    const random1 = Math.round(Math.random() * 6);
+    const random2 = Math.round(Math.random() * 6);
+    return [this.players[random1], this.players[random2]];
+  }
+
+  async startTournament() {
+    // await this.createPlayers();
+    this.startGame();
+    //    while(!this.winner){
+    //        const game = new Game(...this.pickTwoPlayers());
+    //        this.startGame();
+    //        console.log(this.winner)
+    //    }
+  }
+}
+
+// const game1 = new Game();
+// game1.startGame();
+
+const tournament = new Tournament(5);
+tournament.startTournament();
